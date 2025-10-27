@@ -1,0 +1,75 @@
+import json
+from datetime import datetime
+import ast  # safer than eval
+
+# Global variable
+stock_data = {}
+
+
+def addItem(item="default", qty=0, logs=None):  # fixed dangerous default value
+    if logs is None:
+        logs = []
+    if not item:
+        return
+    stock_data[item] = stock_data.get(item, 0) + qty
+    logs.append(f"{datetime.now()}: Added {qty} of {item}")  # use f-string
+
+
+def removeItem(item, qty):
+    try:
+        stock_data[item] -= qty
+        if stock_data[item] <= 0:
+            del stock_data[item]
+    except:
+        pass
+
+
+def getQty(item):
+    return stock_data[item]
+
+
+def loadData(file="inventory.json"):
+    global stock_data
+    # fixed: use with + encoding specified
+    with open(file, "r", encoding="utf-8") as f:
+        stock_data = json.loads(f.read())
+
+
+def saveData(file="inventory.json"):
+    # fixed: use with + encoding specified
+    with open(file, "w", encoding="utf-8") as f:
+        f.write(json.dumps(stock_data))
+
+
+def printData():
+    print("Items Report")
+    for i in stock_data:
+        print(i, "->", stock_data[i])
+
+
+def checkLowItems(threshold=5):
+    result = []
+    for i in stock_data:
+        if stock_data[i] < threshold:
+            result.append(i)
+    return result
+
+
+def main():
+    addItem("apple", 10)
+    addItem("banana", -2)
+    addItem(123, "ten")
+    removeItem("apple", 3)
+    removeItem("orange", 1)
+    print("Apple stock:", getQty("apple"))
+    print("Low items:", checkLowItems())
+    saveData()
+    loadData()
+    printData()
+    # fixed: replaced eval with safe ast.literal_eval
+    expr = "{'msg': 'safe replacement for eval'}"
+    data = ast.literal_eval(expr)
+    print(data["msg"])
+
+
+main()
